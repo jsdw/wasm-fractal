@@ -2,7 +2,7 @@
                 (function() {
                     var wasm;
                     const __exports = {};
-
+                    
 
 let cachedDecoder = new TextDecoder('utf-8');
 
@@ -38,35 +38,83 @@ function getGlobalArgument(arg) {
     return getUint32Memory()[idx];
 }
 
-__exports.__wbg_f_alert_alert_n = function(arg0) {
+__exports.__wbg_f_log_log_n = function(arg0) {
     let len0 = getGlobalArgument(0);
     let v0 = getStringFromWasm(arg0, len0);
-    alert(v0);
+    log(v0);
 }
 
-let cachedEncoder = new TextEncoder('utf-8');
-
-function passStringToWasm(arg) {
-
-    const buf = cachedEncoder.encode(arg);
-    const ptr = wasm.__wbindgen_malloc(buf.length);
-    getUint8Memory().set(buf, ptr);
-    return [ptr, buf.length];
+__exports.__wbg_f_error_error_n = function(arg0) {
+    let len0 = getGlobalArgument(0);
+    let v0 = getStringFromWasm(arg0, len0);
+    error(v0);
 }
 
-function setGlobalArgument(arg, i) {
-    const idx = globalArgumentPtr() / 4 + i;
-    getUint32Memory()[idx] = arg;
+__exports.render = function(arg0) {
+    return wasm.render(arg0.ptr);
 }
 
-__exports.greet = function(arg0) {
-    const [ptr0, len0] = passStringToWasm(arg0);
-    setGlobalArgument(len0, 0);
-    try {
-        return wasm.greet(ptr0);
-    } finally {
-        wasm.__wbindgen_free(ptr0, len0 * 1);
-    }
+__exports.Opts = class Opts {
+
+                static __construct(ptr) {
+                    return new Opts(ptr);
+                }
+
+                constructor(ptr) {
+                    this.ptr = ptr;
+                }
+
+            free() {
+                const ptr = this.ptr;
+                this.ptr = 0;
+                wasm.__wbg_opts_free(ptr);
+            }
+        static new(arg0) {
+    return Opts.__construct(wasm.opts_new(arg0));
+}
+set_width(arg0) {
+    return wasm.opts_set_width(this.ptr, arg0);
+}
+set_height(arg0) {
+    return wasm.opts_set_height(this.ptr, arg0);
+}
+set_top(arg0) {
+    return wasm.opts_set_top(this.ptr, arg0);
+}
+set_left(arg0) {
+    return wasm.opts_set_left(this.ptr, arg0);
+}
+set_bottom(arg0) {
+    return wasm.opts_set_bottom(this.ptr, arg0);
+}
+set_right(arg0) {
+    return wasm.opts_set_right(this.ptr, arg0);
+}
+push_colour(arg0) {
+    const ptr0 = arg0.ptr;
+    arg0.ptr = 0;
+    return wasm.opts_push_colour(this.ptr, ptr0);
+}
+}
+
+__exports.Colour = class Colour {
+
+                static __construct(ptr) {
+                    return new Colour(ptr);
+                }
+
+                constructor(ptr) {
+                    this.ptr = ptr;
+                }
+
+            free() {
+                const ptr = this.ptr;
+                this.ptr = 0;
+                wasm.__wbg_colour_free(ptr);
+            }
+        static at_rgb(arg0, arg1, arg2, arg3) {
+    return Colour.__construct(wasm.colour_at_rgb(arg0, arg1, arg2, arg3));
+}
 }
 
 let slab = [];
@@ -180,6 +228,16 @@ __exports.__wbindgen_is_symbol = function(i) {
     return typeof(getObject(i)) === 'symbol' ? 1 : 0;
 }
 
+let cachedEncoder = new TextEncoder('utf-8');
+
+function passStringToWasm(arg) {
+
+    const buf = cachedEncoder.encode(arg);
+    const ptr = wasm.__wbindgen_malloc(buf.length);
+    getUint8Memory().set(buf, ptr);
+    return [ptr, buf.length];
+}
+
 __exports.__wbindgen_string_get = function(i, len_ptr) {
     let obj = getObject(i);
     if (typeof(obj) !== 'string')
@@ -204,3 +262,4 @@ __exports.__wbindgen_throw = function(ptr, len) {
                     };
                     self.wasmFractal = Object.assign(init, __exports);
                 })();
+            
