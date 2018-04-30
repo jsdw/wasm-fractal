@@ -1,4 +1,4 @@
-importScripts("wasm_Fractal.js");
+importScripts("wasm_fractal.js");
 
 wasmFractal("./wasm_fractal_bg.wasm").then(() => {
 
