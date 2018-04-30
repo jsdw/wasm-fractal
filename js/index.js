@@ -15,20 +15,38 @@ function FractalWorker(){
 		// render takes opts that look like:
 		//
 		// {
-		// 	id: 123,
 		// 	height: 5000,
 		// 	width: 1000,
 		// 	top: -1,
 		// 	left: 0,
 		// 	bottom: 0.5,
-		// 	right: 1,
-		// 	colours: [{ at: 0, red: 100, green: 255, blue: 0 }, { at: 1, red: 0, green: 100, blue: 0 }]
+		// 	right: 1
 		// }
 		//
 		render: function(opts) {
 			fractalWorker.postMessage({
 				type: "render",
 				opts: opts
+			});
+		},
+
+		// setGradient takes an array of colours to use for rendering, like:
+		//
+		// [{ at: 0, red: 100, green: 255, blue: 0 }, { at: 1, red: 0, green: 100, blue: 0 }]
+		//
+		setGradient: function(gradient) {
+			fractalWorker.postMessage({
+				type: "setGradient",
+				gradient: gradient
+			});
+		},
+
+		// setName takes a string, and allows the renderer to identify itself in output
+		// messages and such (handy for debugging).
+		setName: function(name) {
+			fractalWorker.postMessage({
+				type: "setName",
+				name: name
 			});
 		}
 
