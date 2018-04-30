@@ -30,14 +30,14 @@ function FractalWorker(){
 			});
 		},
 
-		// setGradient takes an array of colours to use for rendering, like:
+		// setGradients takes an array of colours to use for rendering, like:
 		//
 		// [{ at: 0, red: 100, green: 255, blue: 0 }, { at: 1, red: 0, green: 100, blue: 0 }]
 		//
-		setGradient: function(gradient) {
+		setGradients: function(gradients) {
 			fractalWorker.postMessage({
-				type: "setGradient",
-				gradient: gradient
+				type: "setGradients",
+				gradients: gradients
 			});
 		},
 

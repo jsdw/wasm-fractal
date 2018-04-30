@@ -2,7 +2,7 @@ importScripts("wasm_fractal.js");
 
 wasmFractal("./wasm_fractal_bg.wasm").then(() => {
 
-    const {Renderer, Gradient, Opts, Colour} = wasmFractal;
+    const {Renderer, Gradients, Opts, Colour} = wasmFractal;
 
     const renderer = new Renderer();
 
@@ -20,9 +20,10 @@ wasmFractal("./wasm_fractal_bg.wasm").then(() => {
             renderer.set_name(msg.data.name);
             break;
 
-            case "setGradient":
-            renderer.clear_gradient();
-            msg.data.gradient.forEach(c => renderer.push_gradient(toGradient(c)))
+            case "setGradients":
+            let gs = new Gradients();
+            msg.data.gradients.forEach(g => gs.add(g.at, g.red, g.green, g.blue));
+            renderer.set_gradients(gs);
             break;
 
         }
@@ -33,16 +34,6 @@ wasmFractal("./wasm_fractal_bg.wasm").then(() => {
         type: "init",
         value: true
     });
-
-    // push a JS gradient definition into wasm:
-    function toGradient(rawGradient) {
-        const g = new Gradient(
-            rawGradient.at,
-            rawGradient.red,
-            rawGradient.green,
-            rawGradient.blue
-        );
-    }
 
     // push JS render opts into wasm:
     function toOpts(rawOpts) {

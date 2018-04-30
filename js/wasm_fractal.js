@@ -65,38 +65,6 @@ function setGlobalArgument(arg, i) {
     getUint32Memory()[idx] = arg;
 }
 
-class ConstructorToken {
-    constructor(ptr) {
-        this.ptr = ptr;
-    }
-}
-
-__exports.Gradient = class Gradient {
-
-                static __construct(ptr) {
-                    return new Gradient(new ConstructorToken(ptr));
-                }
-
-                constructor(...args) {
-                    if (args.length === 1 && args[0] instanceof ConstructorToken) {
-                        this.ptr = args[0].ptr;
-                        return;
-                    }
-
-                    // This invocation of new will call this constructor with a ConstructorToken
-                    let instance = Gradient.new(...args);
-                    this.ptr = instance.ptr;
-                }
-            free() {
-                const ptr = this.ptr;
-                this.ptr = 0;
-                wasm.__wbg_gradient_free(ptr);
-            }
-        static new(arg0, arg1, arg2, arg3) {
-    return Gradient.__construct(wasm.gradient_new(arg0, arg1, arg2, arg3));
-}
-}
-
 __exports.Colour = class Colour {
 
                 static __construct(ptr) {
@@ -113,6 +81,50 @@ __exports.Colour = class Colour {
                 wasm.__wbg_colour_free(ptr);
             }
         }
+
+class ConstructorToken {
+    constructor(ptr) {
+        this.ptr = ptr;
+    }
+}
+
+__exports.Gradients = class Gradients {
+
+                static __construct(ptr) {
+                    return new Gradients(new ConstructorToken(ptr));
+                }
+
+                constructor(...args) {
+                    if (args.length === 1 && args[0] instanceof ConstructorToken) {
+                        this.ptr = args[0].ptr;
+                        return;
+                    }
+
+                    // This invocation of new will call this constructor with a ConstructorToken
+                    let instance = Gradients.new(...args);
+                    this.ptr = instance.ptr;
+                }
+            free() {
+                const ptr = this.ptr;
+                this.ptr = 0;
+                wasm.__wbg_gradients_free(ptr);
+            }
+        static new() {
+    return Gradients.__construct(wasm.gradients_new());
+}
+static bw() {
+    return Gradients.__construct(wasm.gradients_bw());
+}
+clear() {
+    return wasm.gradients_clear(this.ptr);
+}
+add(arg0, arg1, arg2, arg3) {
+    return wasm.gradients_add(this.ptr, arg0, arg1, arg2, arg3);
+}
+colour_at(arg0) {
+    return Colour.__construct(wasm.gradients_colour_at(this.ptr, arg0));
+}
+}
 
 __exports.Renderer = class Renderer {
 
@@ -143,13 +155,10 @@ set_name(arg0) {
     setGlobalArgument(len0, 0);
     return wasm.renderer_set_name(this.ptr, ptr0);
 }
-clear_gradients() {
-    return wasm.renderer_clear_gradients(this.ptr);
-}
-push_gradient(arg0) {
+set_gradients(arg0) {
     const ptr0 = arg0.ptr;
     arg0.ptr = 0;
-    return wasm.renderer_push_gradient(this.ptr, ptr0);
+    return wasm.renderer_set_gradients(this.ptr, ptr0);
 }
 render(arg0) {
     const ptr0 = arg0.ptr;
@@ -325,6 +334,12 @@ __exports.__wbindgen_string_get = function(i, len_ptr) {
 __exports.__wbindgen_throw = function(ptr, len) {
     throw new Error(getStringFromWasm(ptr, len));
 }
+
+__exports.__wbindgen_round = function(x) { return Math.round(x); }
+
+__exports.__wbindgen_log = function(x) { return Math.log(x); }
+
+__exports.__wbindgen_log2 = function(x) { return Math.log2(x); }
 
                     function init(wasm_path) {
                         return fetch(wasm_path)
