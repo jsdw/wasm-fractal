@@ -2,7 +2,7 @@ importScripts("wasm_fractal.js");
 
 wasmFractal("./wasm_fractal_bg.wasm").then(() => {
 
-    const {Renderer, Gradients, Opts, Colour} = wasmFractal;
+    const {Renderer, Gradients, Opts, Colour, wasm} = wasmFractal;
 
     const renderer = new Renderer();
 
@@ -13,7 +13,7 @@ wasmFractal("./wasm_fractal_bg.wasm").then(() => {
 
             case "render":
             const opts = toOpts(msg.data.opts);
-            renderer.render(opts);
+            render(msg.data.id, opts);
             break;
 
             case "setName":
@@ -45,6 +45,18 @@ wasmFractal("./wasm_fractal_bg.wasm").then(() => {
         opts.set_bottom(rawOpts.bottom);
         opts.set_right(rawOpts.right);
         return opts;
+    }
+
+    // perform a render and post back the resulting U8 RGB buffer:
+    function render(id, opts) {
+        renderer.render(opts);
+        postMessage({
+            type: "render_finished",
+            id: id,
+            // this is cloned as it is posted back, from the worker so we don't
+            // have to worry about the WASM memory changing under our feet:
+            buffer: new Uint8Array(wasm.memory.buffer, renderer.output_ptr(), renderer.output_len())
+        })
     }
 
 });

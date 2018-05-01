@@ -65,27 +65,54 @@ function setGlobalArgument(arg, i) {
     getUint32Memory()[idx] = arg;
 }
 
-__exports.Colour = class Colour {
-
-                static __construct(ptr) {
-                    return new Colour(ptr);
-                }
-
-                constructor(ptr) {
-                    this.ptr = ptr;
-                }
-
-            free() {
-                const ptr = this.ptr;
-                this.ptr = 0;
-                wasm.__wbg_colour_free(ptr);
-            }
-        }
-
 class ConstructorToken {
     constructor(ptr) {
         this.ptr = ptr;
     }
+}
+
+__exports.Opts = class Opts {
+
+                static __construct(ptr) {
+                    return new Opts(new ConstructorToken(ptr));
+                }
+
+                constructor(...args) {
+                    if (args.length === 1 && args[0] instanceof ConstructorToken) {
+                        this.ptr = args[0].ptr;
+                        return;
+                    }
+
+                    // This invocation of new will call this constructor with a ConstructorToken
+                    let instance = Opts.new(...args);
+                    this.ptr = instance.ptr;
+                }
+            free() {
+                const ptr = this.ptr;
+                this.ptr = 0;
+                wasm.__wbg_opts_free(ptr);
+            }
+        static new() {
+    return Opts.__construct(wasm.opts_new());
+}
+set_width(arg0) {
+    return wasm.opts_set_width(this.ptr, arg0);
+}
+set_height(arg0) {
+    return wasm.opts_set_height(this.ptr, arg0);
+}
+set_top(arg0) {
+    return wasm.opts_set_top(this.ptr, arg0);
+}
+set_left(arg0) {
+    return wasm.opts_set_left(this.ptr, arg0);
+}
+set_bottom(arg0) {
+    return wasm.opts_set_bottom(this.ptr, arg0);
+}
+set_right(arg0) {
+    return wasm.opts_set_right(this.ptr, arg0);
+}
 }
 
 __exports.Gradients = class Gradients {
@@ -165,51 +192,30 @@ render(arg0) {
     arg0.ptr = 0;
     return wasm.renderer_render(this.ptr, ptr0);
 }
+output_len() {
+    return wasm.renderer_output_len(this.ptr);
+}
+output_ptr() {
+    return wasm.renderer_output_ptr(this.ptr);
+}
 }
 
-__exports.Opts = class Opts {
+__exports.Colour = class Colour {
 
                 static __construct(ptr) {
-                    return new Opts(new ConstructorToken(ptr));
+                    return new Colour(ptr);
                 }
 
-                constructor(...args) {
-                    if (args.length === 1 && args[0] instanceof ConstructorToken) {
-                        this.ptr = args[0].ptr;
-                        return;
-                    }
-
-                    // This invocation of new will call this constructor with a ConstructorToken
-                    let instance = Opts.new(...args);
-                    this.ptr = instance.ptr;
+                constructor(ptr) {
+                    this.ptr = ptr;
                 }
+
             free() {
                 const ptr = this.ptr;
                 this.ptr = 0;
-                wasm.__wbg_opts_free(ptr);
+                wasm.__wbg_colour_free(ptr);
             }
-        static new() {
-    return Opts.__construct(wasm.opts_new());
-}
-set_width(arg0) {
-    return wasm.opts_set_width(this.ptr, arg0);
-}
-set_height(arg0) {
-    return wasm.opts_set_height(this.ptr, arg0);
-}
-set_top(arg0) {
-    return wasm.opts_set_top(this.ptr, arg0);
-}
-set_left(arg0) {
-    return wasm.opts_set_left(this.ptr, arg0);
-}
-set_bottom(arg0) {
-    return wasm.opts_set_bottom(this.ptr, arg0);
-}
-set_right(arg0) {
-    return wasm.opts_set_right(this.ptr, arg0);
-}
-}
+        }
 
 let slab = [];
 

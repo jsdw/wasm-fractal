@@ -53,7 +53,6 @@ impl Renderer {
     }
 
     pub fn render(&mut self, opts: Opts) {
-        log!("renderer {} rendering opts: {:?}", self.name, opts);
 
         // clear the allocated output space for reuse:
         self.output.clear();
@@ -62,7 +61,7 @@ impl Renderer {
         let vertical_step = (opts.bottom - opts.top) / opts.height as f64;
 
         let x_start = opts.left + (horizontal_step / 2.0);
-        let y_start = opts.right + (vertical_step / 2.0);
+        let y_start = opts.top + (vertical_step / 2.0);
 
         let fractal_opts = fractal::Opts {
             max_iterations: 100.0,
@@ -86,6 +85,15 @@ impl Renderer {
 
         }
 
+    }
+
+    // These allow us to create a UInt8Array in JS to view the colours
+    // without performing a copy:
+    pub fn output_len(&self) -> usize {
+        self.output.len() * 3
+    }
+    pub fn output_ptr(&self) -> *const u8 {
+        self.output.as_ptr() as *const u8
     }
 
 }
