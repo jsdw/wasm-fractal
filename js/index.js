@@ -1,37 +1,108 @@
-const canvasSmall = getCanvas("fractal-canvas-small");
+const THREADS = 3;
+
+const canvasSmall  = getCanvas("fractal-canvas-small");
 const canvasMedium = getCanvas("fractal-canvas-medium");
-const canvasLarge = getCanvas("fractal-canvas-large");
+const canvasLarge  = getCanvas("fractal-canvas-large");
+const canvasRetina = getCanvas("fractal-canvas-retina");
 
 // center X coord, center Y coord, and radius of square.
 // to pan, we move x and y.
 // to zoom, we make the radius smaller.
 let cx = -0.7;
 let cy = 0;
-let radius = 1;
+let radius = 1.5;
 
+// Initialise our fractal workers and set things up.
 async function init() {
 
-	window.addEventListener("onresize", setCanvasSizes);
-	setCanvasSizes();
-
-	const fractalWorker = await FractalWorker();
+	const fractalQueue = await FractalWorkerQueue(THREADS);
 	console.log("Workers Initialised");
 
-	window.TEST_INTERFACE = fractalWorker;
-	render([fractalWorker]);
+	fractalQueue.setMaxIterations(500);
+	fractalQueue.setGradients([
+		{ at: 0,    red: 0,   green: 0,   blue: 100 },
+		{ at: 0.1,  red: 100, green: 255, blue: 100 },
+		{ at: 0.25, red: 255, green: 255, blue: 255 },
+		{ at: 0.4,  red: 50,  green: 0,   blue: 255 },
+		{ at: 0.6,  red: 255, green: 255, blue: 50  },
+		{ at: 0.8,  red: 0,   green: 100, blue: 150 },
+		{ at: 1,    red: 0,   green: 0,   blue: 0   }
+	]);
+
+	window.addEventListener("resize", () => {
+		setCanvasSizes()
+		render(fractalQueue);
+	});
+	setCanvasSizes();
+
+	window.TEST_INTERFACE = fractalQueue;
+	render(fractalQueue);
 }
 
-async function render(fractalWorkers) {
+// Given an array of fractal workers, this function renders
+// the fractal based on the current cx, cy and radius,
+async function render(fractalQueue) {
+
+	// stop any queued render requests:
+	fractalQueue.clear();
 
 	// work out the bounding box in terms of fractal coords.
 	const w = document.body.clientWidth;
 	const h = document.body.clientHeight;
 	const ratio = w / h;
 
-	//@todo work out coords that need rendering, then create
-	//packets of work to render everything and send them off
-	//to a threaded pool thing (which can be cleared each
-	//time we re-render).
+	let cHeight;
+	let cWidth;
+	if(ratio < 1) {
+		// height is bigger
+		cWidth = radius * 2;
+		cHeight = cWidth / ratio;
+	} else {
+		// width is bigger
+		cHeight = radius * 2;
+		cWidth = cHeight * ratio;
+	}
+
+	// this is the area we want to render:
+	const top = cy - cHeight / 2;
+	const left = cx - cWidth / 2;
+	const bottom = top + cHeight;
+	const right = left + cWidth;
+
+	const pixelsPerWorker = 100000;
+
+	// for each canvas size, split the work into batches:
+	[canvasSmall, canvasMedium, canvasLarge, canvasRetina].forEach(c => {
+
+		const canvasWidth = c.el.width;
+		const canvasHeight = c.el.height;
+		const jobs = (canvasWidth * canvasHeight) / pixelsPerWorker;
+
+		const rowsPerJob = Math.ceil(canvasHeight / jobs);
+		const coordsPerRow = cHeight / (canvasHeight / rowsPerJob);
+
+		let topCoord = top;
+		let topPx = 0;
+
+		while(topPx < canvasHeight) {
+			let thisTopPx = topPx;
+
+			fractalQueue.render({
+				top: topCoord,
+				left: left,
+				bottom: topCoord + coordsPerRow,
+				right: right,
+				width: canvasWidth,
+				height: rowsPerJob
+			}).then(imageData => {
+				c.ctx.putImageData(imageData, 0, thisTopPx);
+			}, _ => {});
+
+			topCoord += coordsPerRow;
+			topPx += rowsPerJob;
+		}
+
+	});
 
 }
 
@@ -55,6 +126,105 @@ function setCanvasSizes() {
 
 	canvasLarge.el.width = w;
 	canvasLarge.el.height = h;
+
+	canvasRetina.el.width = w * 2;
+	canvasRetina.el.height = h * 2;
+}
+
+// A queue of fractal workers; we spawn as many workers as "threads" asks for,
+// and hand off work to the next available worker on each render call.
+function FractalWorkerQueue(threads){
+
+	const workers = [];
+	for(let i = 0; i < threads; i++) workers.push(FractalWorker());
+
+	return Promise.all(workers).then(_workers => {
+
+		const CANCELLED = "CANCELLED";
+
+		let uid = 1;
+		let queue = Queue();
+		let workers = _workers.slice();
+
+		function run() {
+
+			if(!workers.length || queue.empty()) {
+				return;
+			}
+
+			const item = queue.take();
+			const worker = workers.pop();
+
+			worker.render(item.opts)
+				.then(imageData => {
+					if(uid !== item.id) throw CANCELLED;
+					return imageData;
+				})
+				.then(item.resolve, item.reject).then(_ => {
+					workers.push(worker);
+					run();
+				});
+
+		}
+
+		const methods = {
+			render: function(opts){
+				return new Promise((resolve, reject) => {
+					queue.add({ opts: opts, id: uid, resolve, reject });
+					run();
+				});
+			},
+			clear: function() {
+				uid++;
+				let item;
+				while(item = queue.take()) item.reject(CANCELLED);
+			},
+			CANCELLED: CANCELLED
+		};
+
+		["setEscapeRadius", "setMaxIterations", "setGradients"].forEach(n => {
+			methods[n] = function(){
+				const args = arguments;
+				_workers.forEach(worker => worker[n].apply(worker, args));
+			};
+		});
+
+		return methods;
+
+	});
+
+}
+
+// A quick first-in-first-out linkedlist based queue
+function Queue(){
+
+	let first = null;
+	let last = null;
+
+	function init(item) {
+		first = last = { item, next: null };
+	}
+
+	return {
+		add: function(item) {
+			if(!first) return init(item);
+			const entry = { item, next: null };
+			last.next = entry;
+			last = entry;
+		},
+		take: function() {
+			if(!first) return null;
+			const entry = first;
+			first = first.next;
+			return entry.item;
+		},
+		clear: function() {
+			first = last = null;
+		},
+		empty: function() {
+			return first === null;
+		}
+	}
 }
 
 // A FractalWorker can be asked to render a region of a fractal.
