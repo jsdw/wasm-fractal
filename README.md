@@ -1,6 +1,10 @@
-# WASM Fractal Generator (Work in progress!)
+# WASM Fractal Generator
 
-A Fractal generator written in Rust + JavaScript. The Rust code is compiled to WASM and is the heart of the fractal generator.
+A Fractal generator written in Rust + JavaScript.
+
+The Rust code is compiled to WASM and is the heart of the fractal generator. Web Workers (WASM doesn't support threads yet) are used to parallelise fractal generation.
+
+Go [here](https://jsdw.github.io/wasm-fractal) to check it out.
 
 # Compiling
 
