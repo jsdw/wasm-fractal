@@ -20,6 +20,14 @@ wasmFractal("./wasm_fractal_bg.wasm").then(() => {
             renderer.set_name(msg.data.name);
             break;
 
+            case "setEscapeRadius":
+            renderer.set_escape_radius(msg.data.er);
+            break;
+
+            case "setMaxIterations":
+            renderer.set_max_iterations(msg.data.mi);
+            break;
+
             case "setGradients":
             let gs = new Gradients();
             msg.data.gradients.forEach(g => gs.add(g.at, g.red, g.green, g.blue));
@@ -55,7 +63,7 @@ wasmFractal("./wasm_fractal_bg.wasm").then(() => {
             id: id,
             // this is cloned as it is posted back, from the worker so we don't
             // have to worry about the WASM memory changing under our feet:
-            buffer: new Uint8Array(wasm.memory.buffer, renderer.output_ptr(), renderer.output_len())
+            buffer: new Uint8ClampedArray(wasm.memory.buffer, renderer.output_ptr(), renderer.output_len())
         })
     }
 

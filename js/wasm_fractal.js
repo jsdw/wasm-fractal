@@ -71,6 +71,123 @@ class ConstructorToken {
     }
 }
 
+__exports.Renderer = class Renderer {
+
+                static __construct(ptr) {
+                    return new Renderer(new ConstructorToken(ptr));
+                }
+
+                constructor(...args) {
+                    if (args.length === 1 && args[0] instanceof ConstructorToken) {
+                        this.ptr = args[0].ptr;
+                        return;
+                    }
+
+                    // This invocation of new will call this constructor with a ConstructorToken
+                    let instance = Renderer.new(...args);
+                    this.ptr = instance.ptr;
+                }
+            free() {
+                const ptr = this.ptr;
+                this.ptr = 0;
+                wasm.__wbg_renderer_free(ptr);
+            }
+        static new() {
+    return Renderer.__construct(wasm.renderer_new());
+}
+set_name(arg0) {
+    const [ptr0, len0] = passStringToWasm(arg0);
+    setGlobalArgument(len0, 0);
+    return wasm.renderer_set_name(this.ptr, ptr0);
+}
+set_gradients(arg0) {
+    const ptr0 = arg0.ptr;
+    arg0.ptr = 0;
+    return wasm.renderer_set_gradients(this.ptr, ptr0);
+}
+set_max_iterations(arg0) {
+    return wasm.renderer_set_max_iterations(this.ptr, arg0);
+}
+set_escape_radius(arg0) {
+    return wasm.renderer_set_escape_radius(this.ptr, arg0);
+}
+render(arg0) {
+    const ptr0 = arg0.ptr;
+    arg0.ptr = 0;
+    return wasm.renderer_render(this.ptr, ptr0);
+}
+output_len() {
+    return wasm.renderer_output_len(this.ptr);
+}
+output_ptr() {
+    return wasm.renderer_output_ptr(this.ptr);
+}
+}
+
+__exports.Gradients = class Gradients {
+
+                static __construct(ptr) {
+                    return new Gradients(new ConstructorToken(ptr));
+                }
+
+                constructor(...args) {
+                    if (args.length === 1 && args[0] instanceof ConstructorToken) {
+                        this.ptr = args[0].ptr;
+                        return;
+                    }
+
+                    // This invocation of new will call this constructor with a ConstructorToken
+                    let instance = Gradients.new(...args);
+                    this.ptr = instance.ptr;
+                }
+            free() {
+                const ptr = this.ptr;
+                this.ptr = 0;
+                wasm.__wbg_gradients_free(ptr);
+            }
+        static new() {
+    return Gradients.__construct(wasm.gradients_new());
+}
+static bw() {
+    return Gradients.__construct(wasm.gradients_bw());
+}
+clear() {
+    return wasm.gradients_clear(this.ptr);
+}
+add(arg0, arg1, arg2, arg3) {
+    return wasm.gradients_add(this.ptr, arg0, arg1, arg2, arg3);
+}
+colour_at(arg0) {
+    return Colour.__construct(wasm.gradients_colour_at(this.ptr, arg0));
+}
+}
+
+__exports.Colour = class Colour {
+
+                static __construct(ptr) {
+                    return new Colour(new ConstructorToken(ptr));
+                }
+
+                constructor(...args) {
+                    if (args.length === 1 && args[0] instanceof ConstructorToken) {
+                        this.ptr = args[0].ptr;
+                        return;
+                    }
+
+                    // This invocation of new will call this constructor with a ConstructorToken
+                    let instance = Colour.new(...args);
+                    this.ptr = instance.ptr;
+                }
+            free() {
+                const ptr = this.ptr;
+                this.ptr = 0;
+                wasm.__wbg_colour_free(ptr);
+            }
+        static new(arg0, arg1, arg2) {
+    return Colour.__construct(wasm.colour_new(arg0, arg1, arg2));
+}
+}
+
 __exports.Opts = class Opts {
 
                 static __construct(ptr) {
@@ -114,108 +231,6 @@ set_right(arg0) {
     return wasm.opts_set_right(this.ptr, arg0);
 }
 }
-
-__exports.Gradients = class Gradients {
-
-                static __construct(ptr) {
-                    return new Gradients(new ConstructorToken(ptr));
-                }
-
-                constructor(...args) {
-                    if (args.length === 1 && args[0] instanceof ConstructorToken) {
-                        this.ptr = args[0].ptr;
-                        return;
-                    }
-
-                    // This invocation of new will call this constructor with a ConstructorToken
-                    let instance = Gradients.new(...args);
-                    this.ptr = instance.ptr;
-                }
-            free() {
-                const ptr = this.ptr;
-                this.ptr = 0;
-                wasm.__wbg_gradients_free(ptr);
-            }
-        static new() {
-    return Gradients.__construct(wasm.gradients_new());
-}
-static bw() {
-    return Gradients.__construct(wasm.gradients_bw());
-}
-clear() {
-    return wasm.gradients_clear(this.ptr);
-}
-add(arg0, arg1, arg2, arg3) {
-    return wasm.gradients_add(this.ptr, arg0, arg1, arg2, arg3);
-}
-colour_at(arg0) {
-    return Colour.__construct(wasm.gradients_colour_at(this.ptr, arg0));
-}
-}
-
-__exports.Renderer = class Renderer {
-
-                static __construct(ptr) {
-                    return new Renderer(new ConstructorToken(ptr));
-                }
-
-                constructor(...args) {
-                    if (args.length === 1 && args[0] instanceof ConstructorToken) {
-                        this.ptr = args[0].ptr;
-                        return;
-                    }
-
-                    // This invocation of new will call this constructor with a ConstructorToken
-                    let instance = Renderer.new(...args);
-                    this.ptr = instance.ptr;
-                }
-            free() {
-                const ptr = this.ptr;
-                this.ptr = 0;
-                wasm.__wbg_renderer_free(ptr);
-            }
-        static new() {
-    return Renderer.__construct(wasm.renderer_new());
-}
-set_name(arg0) {
-    const [ptr0, len0] = passStringToWasm(arg0);
-    setGlobalArgument(len0, 0);
-    return wasm.renderer_set_name(this.ptr, ptr0);
-}
-set_gradients(arg0) {
-    const ptr0 = arg0.ptr;
-    arg0.ptr = 0;
-    return wasm.renderer_set_gradients(this.ptr, ptr0);
-}
-render(arg0) {
-    const ptr0 = arg0.ptr;
-    arg0.ptr = 0;
-    return wasm.renderer_render(this.ptr, ptr0);
-}
-output_len() {
-    return wasm.renderer_output_len(this.ptr);
-}
-output_ptr() {
-    return wasm.renderer_output_ptr(this.ptr);
-}
-}
-
-__exports.Colour = class Colour {
-
-                static __construct(ptr) {
-                    return new Colour(ptr);
-                }
-
-                constructor(ptr) {
-                    this.ptr = ptr;
-                }
-
-            free() {
-                const ptr = this.ptr;
-                this.ptr = 0;
-                wasm.__wbg_colour_free(ptr);
-            }
-        }
 
 let slab = [];
 
@@ -341,11 +356,11 @@ __exports.__wbindgen_throw = function(ptr, len) {
     throw new Error(getStringFromWasm(ptr, len));
 }
 
-__exports.__wbindgen_round = function(x) { return Math.round(x); }
-
 __exports.__wbindgen_log = function(x) { return Math.log(x); }
 
 __exports.__wbindgen_log2 = function(x) { return Math.log2(x); }
+
+__exports.__wbindgen_round = function(x) { return Math.round(x); }
 
                     function init(wasm_path) {
                         return fetch(wasm_path)

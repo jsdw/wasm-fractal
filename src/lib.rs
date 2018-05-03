@@ -29,6 +29,8 @@ macro_rules! error {
 pub struct Renderer {
     name: String,
     gradients: Gradients,
+    max_iterations: f64,
+    escape_radius: f64,
     output: Vec<Colour>
 }
 
@@ -40,6 +42,8 @@ impl Renderer {
         Renderer {
             name: String::new(),
             gradients: Gradients::bw(),
+            max_iterations: 500.0,
+            escape_radius: 10.0,
             output: vec![]
         }
     }
@@ -50,6 +54,14 @@ impl Renderer {
 
     pub fn set_gradients(&mut self, gradients: Gradients) {
         self.gradients = gradients;
+    }
+
+    pub fn set_max_iterations(&mut self, mi: f64) {
+        self.max_iterations = mi;
+    }
+
+    pub fn set_escape_radius(&mut self, er: f64) {
+        self.escape_radius = er;
     }
 
     pub fn render(&mut self, opts: Opts) {
@@ -64,8 +76,8 @@ impl Renderer {
         let y_start = opts.top + (vertical_step / 2.0);
 
         let fractal_opts = fractal::Opts {
-            max_iterations: 100.0,
-            escape_radius: 10.0
+            max_iterations: self.max_iterations,
+            escape_radius: self.escape_radius
         };
 
         let mut y = y_start;
@@ -90,7 +102,7 @@ impl Renderer {
     // These allow us to create a UInt8Array in JS to view the colours
     // without performing a copy:
     pub fn output_len(&self) -> usize {
-        self.output.len() * 3
+        self.output.len() * 4
     }
     pub fn output_ptr(&self) -> *const u8 {
         self.output.as_ptr() as *const u8
@@ -133,7 +145,7 @@ impl Gradients {
     pub fn colour_at(&self, at: f64) -> Colour {
 
         if self.gradients.len() == 0 {
-            return Colour { red: 0, green: 0, blue: 0 }
+            return Colour::new(0,0,0)
         }
 
         if self.gradients.len() == 1 {
@@ -161,15 +173,15 @@ impl Gradients {
                 let green = (g2.green - g1.green) * dist + g1.green;
                 let blue = (g2.blue - g1.blue) * dist + g1.blue;
 
-                return Colour {
-                    red: red.round() as u8,
-                    green: green.round() as u8,
-                    blue: blue.round() as u8
-                }
+                return Colour::new(
+                    red.round() as u8,
+                    green.round() as u8,
+                    blue.round() as u8
+                )
             }
         }
 
-        return Colour { red: 0, green: 0, blue: 0 }
+        return Colour::new(0,0,0)
 
     }
 
@@ -188,7 +200,8 @@ impl Gradient {
         Colour {
             red: self.red as u8,
             green: self.green as u8,
-            blue: self.blue as u8
+            blue: self.blue as u8,
+            alpha: 255
         }
     }
 }
@@ -199,7 +212,20 @@ impl Gradient {
 pub struct Colour {
     red: u8,
     green: u8,
-    blue: u8
+    blue: u8,
+    // Having this aligns with ImageData on the JS,
+    // though we don't make use of it here:
+    alpha: u8
+}
+
+#[wasm_bindgen]
+impl Colour {
+
+    #[wasm_bindgen(constructor)]
+    pub fn new(red: u8, green: u8, blue: u8) -> Colour {
+        Colour { red, green, blue, alpha: 255 }
+    }
+
 }
 
 #[wasm_bindgen]
