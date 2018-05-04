@@ -71,59 +71,6 @@ class ConstructorToken {
     }
 }
 
-__exports.Renderer = class Renderer {
-
-                static __construct(ptr) {
-                    return new Renderer(new ConstructorToken(ptr));
-                }
-
-                constructor(...args) {
-                    if (args.length === 1 && args[0] instanceof ConstructorToken) {
-                        this.ptr = args[0].ptr;
-                        return;
-                    }
-
-                    // This invocation of new will call this constructor with a ConstructorToken
-                    let instance = Renderer.new(...args);
-                    this.ptr = instance.ptr;
-                }
-            free() {
-                const ptr = this.ptr;
-                this.ptr = 0;
-                wasm.__wbg_renderer_free(ptr);
-            }
-        static new() {
-    return Renderer.__construct(wasm.renderer_new());
-}
-set_name(arg0) {
-    const [ptr0, len0] = passStringToWasm(arg0);
-    setGlobalArgument(len0, 0);
-    return wasm.renderer_set_name(this.ptr, ptr0);
-}
-set_gradients(arg0) {
-    const ptr0 = arg0.ptr;
-    arg0.ptr = 0;
-    return wasm.renderer_set_gradients(this.ptr, ptr0);
-}
-set_max_iterations(arg0) {
-    return wasm.renderer_set_max_iterations(this.ptr, arg0);
-}
-set_escape_radius(arg0) {
-    return wasm.renderer_set_escape_radius(this.ptr, arg0);
-}
-render(arg0) {
-    const ptr0 = arg0.ptr;
-    arg0.ptr = 0;
-    return wasm.renderer_render(this.ptr, ptr0);
-}
-output_len() {
-    return wasm.renderer_output_len(this.ptr);
-}
-output_ptr() {
-    return wasm.renderer_output_ptr(this.ptr);
-}
-}
-
 __exports.Gradients = class Gradients {
 
                 static __construct(ptr) {
@@ -229,6 +176,59 @@ set_bottom(arg0) {
 }
 set_right(arg0) {
     return wasm.opts_set_right(this.ptr, arg0);
+}
+}
+
+__exports.Renderer = class Renderer {
+
+                static __construct(ptr) {
+                    return new Renderer(new ConstructorToken(ptr));
+                }
+
+                constructor(...args) {
+                    if (args.length === 1 && args[0] instanceof ConstructorToken) {
+                        this.ptr = args[0].ptr;
+                        return;
+                    }
+
+                    // This invocation of new will call this constructor with a ConstructorToken
+                    let instance = Renderer.new(...args);
+                    this.ptr = instance.ptr;
+                }
+            free() {
+                const ptr = this.ptr;
+                this.ptr = 0;
+                wasm.__wbg_renderer_free(ptr);
+            }
+        static new() {
+    return Renderer.__construct(wasm.renderer_new());
+}
+set_name(arg0) {
+    const [ptr0, len0] = passStringToWasm(arg0);
+    setGlobalArgument(len0, 0);
+    return wasm.renderer_set_name(this.ptr, ptr0);
+}
+set_gradients(arg0) {
+    const ptr0 = arg0.ptr;
+    arg0.ptr = 0;
+    return wasm.renderer_set_gradients(this.ptr, ptr0);
+}
+set_max_iterations(arg0) {
+    return wasm.renderer_set_max_iterations(this.ptr, arg0);
+}
+set_escape_radius(arg0) {
+    return wasm.renderer_set_escape_radius(this.ptr, arg0);
+}
+render(arg0) {
+    const ptr0 = arg0.ptr;
+    arg0.ptr = 0;
+    return wasm.renderer_render(this.ptr, ptr0);
+}
+output_len() {
+    return wasm.renderer_output_len(this.ptr);
+}
+output_ptr() {
+    return wasm.renderer_output_ptr(this.ptr);
 }
 }
 
@@ -357,8 +357,6 @@ __exports.__wbindgen_throw = function(ptr, len) {
 }
 
 __exports.__wbindgen_log = function(x) { return Math.log(x); }
-
-__exports.__wbindgen_log2 = function(x) { return Math.log2(x); }
 
 __exports.__wbindgen_round = function(x) { return Math.round(x); }
 

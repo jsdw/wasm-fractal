@@ -8,7 +8,7 @@ pub fn iterations(opts: &Opts, mut zr: f64, mut zi: f64, cr: f64, ci: f64) -> f6
     let mut zi2 = zi * zi;
     let mut i = 0.0;
 
-    while i < opts.max_iterations && zr2 + zi2 < opts.escape_radius {
+    while i < opts.max_iterations && zr2 + zi2 < er {
         zi = 2.0 * zr * zi + ci;
         zr = zr2 - zi2 + cr;
         zr2 = zr * zr;
@@ -17,12 +17,12 @@ pub fn iterations(opts: &Opts, mut zr: f64, mut zi: f64, cr: f64, ci: f64) -> f6
     }
 
     // This smoothes things out at the cost of more work:
-    let frac = ((zr2+zi2).ln() / er.ln() / er.log2()).ln();
+    let frac = i + 1.0 - ((zr.abs() + zi.abs()).ln() / 2f64.ln()).ln();
 
     if frac.is_nan() {
         i
     } else {
-        i - frac
+        frac
     }
 
 }
