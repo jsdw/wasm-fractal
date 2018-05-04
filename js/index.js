@@ -15,10 +15,12 @@ let radius = 1.5;
 // Initialise our fractal workers and set things up.
 async function init() {
 
+	// Initialise our fractal workers:
 	const fractalQueue = await FractalWorkerQueue(THREADS);
-	console.log("Workers Initialised");
-
-	fractalQueue.setMaxIterations(500);
+	let max_iterations = 500;
+	let escape_radius = 100;
+	fractalQueue.setMaxIterations(max_iterations);
+	fractalQueue.setEscapeRadius(escape_radius);
 	fractalQueue.setGradients([
 		{ at: 0,    red: 0,   green: 0,   blue: 100 },
 		{ at: 0.1,  red: 100, green: 255, blue: 100 },
@@ -28,15 +30,83 @@ async function init() {
 		{ at: 0.8,  red: 0,   green: 100, blue: 150 },
 		{ at: 1,    red: 0,   green: 0,   blue: 0   }
 	]);
+	const doRender = () => render(fractalQueue);
+	window.fractalQueue = fractalQueue;
 
+	// Provide a simple console interface to a couple of handy commands:
+	console.log("wasm-fractal advanced commands")
+	console.log("==============================")
+	console.log("zoom = NUMBER");
+	console.log("iters = NUMBER");
+	console.log("escape_radius = NUMBER");
+	Object.defineProperties(window, {
+		iters: {
+			get: () => {
+				return max_iterations;
+			},
+			set: (val) => {
+				if(typeof val != "number") return;
+				max_iterations = val;
+				fractalQueue.setMaxIterations(val);
+				doRender();
+			}
+		},
+		escape_radius: {
+			get: () => {
+				return escape_radius;
+			},
+			set: (val) => {
+				if(typeof val != "number") return;
+				escape_radius = val;
+				fractalQueue.setEscapeRadius(val);
+				doRender();
+			}
+		},
+		zoom: {
+			get: () => {
+				return 1.5 / radius;
+			},
+			set: (val) => {
+				if(typeof val != "number") return;
+				radius = 1.5 / val;
+				doRender();
+			}
+		}
+	})
+
+	// Redraw on window resize:
 	window.addEventListener("resize", () => {
 		setCanvasSizes()
-		render(fractalQueue);
+		doRender();
 	});
 	setCanvasSizes();
 
-	window.TEST_INTERFACE = fractalQueue;
-	render(fractalQueue);
+	// Basic keyboard pan and zoom:
+	const panStep = 0.1;
+	const zoomStep = 0.7;
+	document.addEventListener("keydown", e => {
+		if(e.keyCode == 38 || e.keyCode == 87 /* UP | w */) {
+			cy -= panStep * radius;
+			doRender();
+		} else if(e.keyCode == 40 || e.keyCode == 83 /* DOWN | s  */) {
+			cy += panStep * radius;
+			doRender();
+		} else if(e.keyCode == 37 || e.keyCode == 65 /* LEFT | a  */) {
+			cx -= panStep * radius;
+			doRender();
+		} else if(e.keyCode == 39 || e.keyCode == 68 /* RIGHT | d  */) {
+			cx += panStep * radius;
+			doRender();
+		} else if(e.keyCode == 189 /* - | _  */) {
+			radius /= zoomStep;
+			doRender();
+		} else if (e.keyCode == 187 /* = | +  */) {
+			radius *= zoomStep;
+			doRender();
+		}
+	})
+
+	doRender();
 }
 
 // Given an array of fractal workers, this function renders
@@ -76,6 +146,8 @@ async function render(fractalQueue) {
 
 		const canvasWidth = c.el.width;
 		const canvasHeight = c.el.height;
+		c.ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
 		const jobs = (canvasWidth * canvasHeight) / pixelsPerWorker;
 
 		const rowsPerJob = Math.ceil(canvasHeight / jobs);
