@@ -1,4 +1,4 @@
-const THREADS = 3;
+const THREADS = 6;
 
 const canvasSmall  = getCanvas("fractal-canvas-small");
 const canvasMedium = getCanvas("fractal-canvas-medium");
@@ -17,18 +17,25 @@ async function init() {
 
 	// Initialise our fractal workers:
 	const fractalQueue = await FractalWorkerQueue(THREADS);
-	let max_iterations = 500;
+	let max_iterations = 700;
 	let escape_radius = 100;
 	fractalQueue.setMaxIterations(max_iterations);
 	fractalQueue.setEscapeRadius(escape_radius);
 	fractalQueue.setGradients([
-		{ at: 0,    red: 0,   green: 0,   blue: 100 },
-		{ at: 0.1,  red: 100, green: 255, blue: 100 },
-		{ at: 0.25, red: 255, green: 255, blue: 255 },
-		{ at: 0.4,  red: 50,  green: 0,   blue: 255 },
-		{ at: 0.6,  red: 255, green: 255, blue: 50  },
-		{ at: 0.8,  red: 0,   green: 100, blue: 150 },
-		{ at: 1,    red: 0,   green: 0,   blue: 0   }
+		{ at: 0,     red: 50,  green: 0,   blue: 90 },  // purple
+		{ at: 0.005, red: 0,   green: 0,   blue: 90 },  // dark blue
+		{ at: 0.02,  red: 100, green: 255, blue: 100 }, // bright green
+		{ at: 0.035, red: 255, green: 255, blue: 255 }, // white
+		{ at: 0.06,  red: 50,  green: 0,   blue: 255 }, // purply blue
+		{ at: 0.1,   red: 255, green: 0,   blue: 0   }, // red
+		{ at: 0.16,  red: 255, green: 238, blue: 50  }, // yellow
+		{ at: 0.3,   red: 234, green: 41,  blue: 255 }, // pink
+		{ at: 0.4,   red: 0,   green: 255, blue: 234 }, // cyan
+		{ at: 0.5,   red: 0,   green: 255, blue: 0   }, // green
+		{ at: 0.6,   red: 255, green: 0,   blue: 0   }, // red
+		{ at: 0.7,   red: 255, green: 238, blue: 50  }, // yellow
+		{ at: 0.8,   red: 255, green: 255, blue: 255 }, // white
+		{ at: 1,     red: 0,   green: 0,   blue: 0   }  // black
 	]);
 	const doRender = () => render(fractalQueue);
 	window.fractalQueue = fractalQueue;

@@ -29,7 +29,7 @@ macro_rules! error {
 pub struct Renderer {
     name: String,
     gradients: Gradients,
-    max_iterations: f64,
+    max_iterations: isize,
     escape_radius: f64,
     output: Vec<Colour>
 }
@@ -42,7 +42,7 @@ impl Renderer {
         Renderer {
             name: String::new(),
             gradients: Gradients::bw(),
-            max_iterations: 500.0,
+            max_iterations: 500,
             escape_radius: 10.0,
             output: vec![]
         }
@@ -56,7 +56,7 @@ impl Renderer {
         self.gradients = gradients;
     }
 
-    pub fn set_max_iterations(&mut self, mi: f64) {
+    pub fn set_max_iterations(&mut self, mi: isize) {
         self.max_iterations = mi;
     }
 
@@ -80,20 +80,26 @@ impl Renderer {
             escape_radius: self.escape_radius
         };
 
-        let mut y = y_start;
-        while y < opts.bottom {
+        let mi = self.max_iterations as f64;
 
-            let mut x = x_start;
-            while x < opts.right {
+        // we make sure to iterate exactly width*height times, and increment
+        // the coords as we go to render each pixel.
+        let mut y_coord = y_start;
+        for _y in 0..opts.height {
 
-                let iters = fractal::iterations(&fractal_opts, 0.0, 0.0, x, y);
-                let colour = self.gradients.colour_at(iters / fractal_opts.max_iterations);
+            let mut x_coord = x_start;
+            for _x in 0..opts.width {
+
+                let iters = fractal::iterations(&fractal_opts, 0.0, 0.0, x_coord, y_coord);
+                let colour = self.gradients.colour_at(iters / mi);
+
                 self.output.push(colour);
 
-                x += horizontal_step;
+                x_coord += horizontal_step;
+
             }
 
-            y += vertical_step;
+            y_coord += vertical_step;
 
         }
 
@@ -167,7 +173,8 @@ impl Gradients {
             let g2 = &w[1];
 
             if at >= g1.at && at <= g2.at {
-                let dist = at / (g2.at - g1.at);
+                let range = g2.at - g1.at;
+                let dist = (at - g1.at) / range;
 
                 let red = (g2.red - g1.red) * dist + g1.red;
                 let green = (g2.green - g1.green) * dist + g1.green;
@@ -198,9 +205,9 @@ pub struct Gradient {
 impl Gradient {
     fn to_colour(&self) -> Colour {
         Colour {
-            red: self.red as u8,
-            green: self.green as u8,
-            blue: self.blue as u8,
+            red: self.red.round() as u8,
+            green: self.green.round() as u8,
+            blue: self.blue.round() as u8,
             alpha: 255
         }
     }
