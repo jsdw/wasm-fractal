@@ -4,7 +4,7 @@ A Fractal generator written in Rust + JavaScript.
 
 The Rust code is compiled to WASM and is the heart of the fractal generator. Web Workers (WASM doesn't support threads yet) are used to parallelise fractal generation.
 
-Go [here](https://jsdw.github.io/wasm-fractal) to check it out.
+Go [here](https://jsdw.github.io/wasm-fractal) to check it out. There are a couple of settings that can be tweaked in the console (iters is the main one).
 
 # Compiling
 
@@ -20,7 +20,7 @@ rustup default nightly
 # add our wasm build target:
 rustup target add wasm32-unknown-unknown
 
-# install the bindgen cli tool to generate js<->wasm bindings:
+# install the bindgen cli tool (I used 0.2.7) to generate js<->wasm bindings:
 cargo install wasm-bindgen-cli
 ```
 
