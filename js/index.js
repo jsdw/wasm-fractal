@@ -124,11 +124,11 @@ async function init() {
 			if(smallRenderInProgress) return;
 			cx += panStep * radius;
 			doRender();
-		} else if(e.keyCode == 189 || e.keyCode == 173 /* - | _  */) {
+		} else if(e.keyCode == 189 || e.keyCode == 173 || e.keyCode == 109 /* - | _  */) {
 			if(smallRenderInProgress) return;
 			radius /= zoomStep;
 			doRender();
-		} else if (e.keyCode == 187 || e.keyCode == 61 /* = | +  */) {
+		} else if (e.keyCode == 187 || e.keyCode == 61 || e.keyCode == 107 /* = | +  */) {
 			if(smallRenderInProgress) return;
 			radius *= zoomStep;
 			doRender();
