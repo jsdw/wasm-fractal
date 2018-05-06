@@ -12,6 +12,13 @@ let cx = -0.7;
 let cy = 0;
 let radius = 1.5;
 
+// keep track of whether the low res rendering is underway.
+// we don't let keyboard commands run while this is true,
+// so that you can mash arrow keys and actually see what's
+// happening.
+let smallRenderInProgress = false;
+let renderTimes = [0,0,0,0];
+
 // Initialise our fractal workers and set things up.
 async function init() {
 
@@ -46,6 +53,7 @@ async function init() {
 	console.log("zoom = NUMBER");
 	console.log("iters = NUMBER");
 	console.log("escape_radius = NUMBER");
+	console.log("perf");
 	Object.defineProperties(window, {
 		iters: {
 			get: () => {
@@ -78,6 +86,14 @@ async function init() {
 				radius = 1.5 / val;
 				doRender();
 			}
+		},
+		perf: {
+			get: () => {
+				console.log("small:  ", renderTimes[0]);
+				console.log("medium: ", renderTimes[1]);
+				console.log("large:  ", renderTimes[2]);
+				console.log("retina: ", renderTimes[3]);
+			}
 		}
 	})
 
@@ -93,21 +109,27 @@ async function init() {
 	const zoomStep = 0.7;
 	document.addEventListener("keydown", e => {
 		if(e.keyCode == 38 || e.keyCode == 87 /* UP | w */) {
+			if(smallRenderInProgress) return;
 			cy -= panStep * radius;
 			doRender();
 		} else if(e.keyCode == 40 || e.keyCode == 83 /* DOWN | s  */) {
+			if(smallRenderInProgress) return;
 			cy += panStep * radius;
 			doRender();
 		} else if(e.keyCode == 37 || e.keyCode == 65 /* LEFT | a  */) {
+			if(smallRenderInProgress) return;
 			cx -= panStep * radius;
 			doRender();
 		} else if(e.keyCode == 39 || e.keyCode == 68 /* RIGHT | d  */) {
+			if(smallRenderInProgress) return;
 			cx += panStep * radius;
 			doRender();
-		} else if(e.keyCode == 189 /* - | _  */) {
+		} else if(e.keyCode == 189 || e.keyCode == 173 /* - | _  */) {
+			if(smallRenderInProgress) return;
 			radius /= zoomStep;
 			doRender();
-		} else if (e.keyCode == 187 /* = | +  */) {
+		} else if (e.keyCode == 187 || e.keyCode == 61 /* = | +  */) {
+			if(smallRenderInProgress) return;
 			radius *= zoomStep;
 			doRender();
 		}
@@ -122,6 +144,9 @@ async function render(fractalQueue) {
 
 	// stop any queued render requests:
 	fractalQueue.clear();
+
+	// reset perf timings:
+	renderTimes = [0,0,0,0];
 
 	// work out the bounding box in terms of fractal coords.
 	const w = document.body.clientWidth;
@@ -149,7 +174,12 @@ async function render(fractalQueue) {
 	const pixelsPerWorker = 100000;
 
 	// for each canvas size, split the work into batches:
-	[canvasSmall, canvasMedium, canvasLarge, canvasRetina].forEach(c => {
+	[canvasSmall, canvasMedium, canvasLarge, canvasRetina].forEach((c, i) => {
+
+		const perf1 = performance.now();
+		if(i === 0) {
+			smallRenderInProgress = true;
+		}
 
 		const canvasWidth = c.el.width;
 		const canvasHeight = c.el.height;
@@ -163,23 +193,41 @@ async function render(fractalQueue) {
 		let topCoord = top;
 		let topPx = 0;
 
+		let renderPs = [];
+
 		while(topPx < canvasHeight) {
 			let thisTopPx = topPx;
 
-			fractalQueue.render({
-				top: topCoord,
-				left: left,
-				bottom: topCoord + coordsPerRow,
-				right: right,
-				width: canvasWidth,
-				height: rowsPerJob
-			}).then(imageData => {
-				c.ctx.putImageData(imageData, 0, thisTopPx);
-			}, _ => {});
+			renderPs.push(
+				fractalQueue.render({
+					top: topCoord,
+					left: left,
+					bottom: topCoord + coordsPerRow,
+					right: right,
+					width: canvasWidth,
+					height: rowsPerJob
+				}).then(imageData => {
+					c.ctx.putImageData(imageData, 0, thisTopPx);
+				})
+			);
 
 			topCoord += coordsPerRow;
 			topPx += rowsPerJob;
 		}
+
+		// We add a little basic profiling, and keep track of
+		// whether the smallest canvas has rendered yet:
+		Promise.all(renderPs).then(_ => {
+			renderTimes[i] = performance.now() - perf1;
+			if(i === 0) {
+				smallRenderInProgress = false;
+			}
+		}, _ => {
+			renderTimes[i] = 0;
+			if(i === 0) {
+				smallRenderInProgress = false;
+			}
+		});
 
 	});
 

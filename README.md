@@ -1,10 +1,10 @@
 # WASM Fractal Generator
 
-A Fractal generator written in Rust + JavaScript.
+A Fractal generator written in Rust + JavaScript. Requires a browser that supports WASM (Edge 16+, Firefox 53+, Chrome 57+, Safari 11+).
 
-The Rust code is compiled to WASM and is the heart of the fractal generator. Web Workers (WASM doesn't support threads yet) are used to parallelise fractal generation.
+The Rust code is compiled to WASM and is the heart of the fractal generator. The main thread queues up work to hand out to multiple Web Workers, who themselves instantiate and run WASM to generate the resulting data, which is then sent back to the main thread to be splatted onto one of a few canvases, set up for low, medium, high and retina renderings.
 
-Go [here](https://jsdw.github.io/wasm-fractal) to check it out. There are a couple of settings that can be tweaked in the console (iters is the main one).
+Go [here](https://jsdw.github.io/wasm-fractal) to check it out. There are a couple of things that can be tweaked/obtained in the console (iters is the main one).
 
 # Compiling
 
