@@ -67,6 +67,15 @@ wasmFractal("./wasm_fractal_bg.wasm").then(() => {
         })
     }
 
+}, _ => {
+
+    // let things know that we failed to initialise the WASM:
+    postMessage({
+        type: "init",
+        value: false,
+        reason: "failed to fetch and instantiate the WASM"
+    });
+
 });
 
 // quick bindings to some useful commands:
