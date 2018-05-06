@@ -464,5 +464,8 @@ function FractalWorker(){
 
 }
 
-// Run everything:
-init();
+// Run everything. If we fail to initialise workers, display
+// no support message.
+init().catch(_ => {
+	displayNoSupport();
+})
