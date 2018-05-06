@@ -44,13 +44,12 @@
 	<canvas id="fractal-canvas-large"></canvas>
 	<canvas id="fractal-canvas-retina"></canvas>
 	<div id="no-support" style="display:none">
-		<div id="no-support-inner">
-			I'm sorry, but your browser does not appear to support WebAssembly, which is required for this program to run.
-		</div>
+		<div id="no-support-inner"></div>
 	</div>
 	<script type="text/javascript">
 
-		function displayNoSupport() {
+		function displayNoSupport(text) {
+			document.getElementById("no-support-inner").textContent = text;
 			document.getElementById("no-support").style.display = "flex";
 		}
 
@@ -67,7 +66,7 @@
 			return false;
 		})();
 
-		if(!isWasmSupported) displayNoSupport();
+		if(!isWasmSupported) displayNoSupport("I'm sorry, but your browser does not appear to support WebAssembly, which is required for this program to run.");
 
 	</script>
 	<script src='./js/index.js'></script>
