@@ -3,6 +3,11 @@ name = "wasm-fractal"
 version = "0.1.0"
 authors = ["James Wilson <me@unbui.lt>"]
 
+[profile.release]
+debug = false
+lto = true
+opt-level = 's'
+
 [lib]
 crate-type = ["cdylib"]
 

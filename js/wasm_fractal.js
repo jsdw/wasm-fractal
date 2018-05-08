@@ -71,6 +71,88 @@ class ConstructorToken {
     }
 }
 
+__exports.Opts = class Opts {
+
+                static __construct(ptr) {
+                    return new Opts(new ConstructorToken(ptr));
+                }
+
+                constructor(...args) {
+                    if (args.length === 1 && args[0] instanceof ConstructorToken) {
+                        this.ptr = args[0].ptr;
+                        return;
+                    }
+
+                    // This invocation of new will call this constructor with a ConstructorToken
+                    let instance = Opts.new(...args);
+                    this.ptr = instance.ptr;
+                }
+            free() {
+                const ptr = this.ptr;
+                this.ptr = 0;
+                wasm.__wbg_opts_free(ptr);
+            }
+        static new() {
+    return Opts.__construct(wasm.opts_new());
+}
+set_width(arg0) {
+    return wasm.opts_set_width(this.ptr, arg0);
+}
+set_height(arg0) {
+    return wasm.opts_set_height(this.ptr, arg0);
+}
+set_top(arg0) {
+    return wasm.opts_set_top(this.ptr, arg0);
+}
+set_left(arg0) {
+    return wasm.opts_set_left(this.ptr, arg0);
+}
+set_bottom(arg0) {
+    return wasm.opts_set_bottom(this.ptr, arg0);
+}
+set_right(arg0) {
+    return wasm.opts_set_right(this.ptr, arg0);
+}
+}
+
+__exports.Gradients = class Gradients {
+
+                static __construct(ptr) {
+                    return new Gradients(new ConstructorToken(ptr));
+                }
+
+                constructor(...args) {
+                    if (args.length === 1 && args[0] instanceof ConstructorToken) {
+                        this.ptr = args[0].ptr;
+                        return;
+                    }
+
+                    // This invocation of new will call this constructor with a ConstructorToken
+                    let instance = Gradients.new(...args);
+                    this.ptr = instance.ptr;
+                }
+            free() {
+                const ptr = this.ptr;
+                this.ptr = 0;
+                wasm.__wbg_gradients_free(ptr);
+            }
+        static new() {
+    return Gradients.__construct(wasm.gradients_new());
+}
+static bw() {
+    return Gradients.__construct(wasm.gradients_bw());
+}
+clear() {
+    return wasm.gradients_clear(this.ptr);
+}
+add(arg0, arg1, arg2, arg3) {
+    return wasm.gradients_add(this.ptr, arg0, arg1, arg2, arg3);
+}
+colour_at(arg0) {
+    return Colour.__construct(wasm.gradients_colour_at(this.ptr, arg0));
+}
+}
+
 __exports.Renderer = class Renderer {
 
                 static __construct(ptr) {
@@ -124,50 +206,6 @@ output_ptr() {
 }
 }
 
-__exports.Opts = class Opts {
-
-                static __construct(ptr) {
-                    return new Opts(new ConstructorToken(ptr));
-                }
-
-                constructor(...args) {
-                    if (args.length === 1 && args[0] instanceof ConstructorToken) {
-                        this.ptr = args[0].ptr;
-                        return;
-                    }
-
-                    // This invocation of new will call this constructor with a ConstructorToken
-                    let instance = Opts.new(...args);
-                    this.ptr = instance.ptr;
-                }
-            free() {
-                const ptr = this.ptr;
-                this.ptr = 0;
-                wasm.__wbg_opts_free(ptr);
-            }
-        static new() {
-    return Opts.__construct(wasm.opts_new());
-}
-set_width(arg0) {
-    return wasm.opts_set_width(this.ptr, arg0);
-}
-set_height(arg0) {
-    return wasm.opts_set_height(this.ptr, arg0);
-}
-set_top(arg0) {
-    return wasm.opts_set_top(this.ptr, arg0);
-}
-set_left(arg0) {
-    return wasm.opts_set_left(this.ptr, arg0);
-}
-set_bottom(arg0) {
-    return wasm.opts_set_bottom(this.ptr, arg0);
-}
-set_right(arg0) {
-    return wasm.opts_set_right(this.ptr, arg0);
-}
-}
-
 __exports.Colour = class Colour {
 
                 static __construct(ptr) {
@@ -192,176 +230,15 @@ __exports.Colour = class Colour {
         static new(arg0, arg1, arg2) {
     return Colour.__construct(wasm.colour_new(arg0, arg1, arg2));
 }
-static empty() {
-    return Colour.__construct(wasm.colour_empty());
-}
-}
-
-__exports.Gradients = class Gradients {
-
-                static __construct(ptr) {
-                    return new Gradients(new ConstructorToken(ptr));
-                }
-
-                constructor(...args) {
-                    if (args.length === 1 && args[0] instanceof ConstructorToken) {
-                        this.ptr = args[0].ptr;
-                        return;
-                    }
-
-                    // This invocation of new will call this constructor with a ConstructorToken
-                    let instance = Gradients.new(...args);
-                    this.ptr = instance.ptr;
-                }
-            free() {
-                const ptr = this.ptr;
-                this.ptr = 0;
-                wasm.__wbg_gradients_free(ptr);
-            }
-        static new() {
-    return Gradients.__construct(wasm.gradients_new());
-}
-static bw() {
-    return Gradients.__construct(wasm.gradients_bw());
-}
-clear() {
-    return wasm.gradients_clear(this.ptr);
-}
-add(arg0, arg1, arg2, arg3) {
-    return wasm.gradients_add(this.ptr, arg0, arg1, arg2, arg3);
-}
-colour_at(arg0) {
-    return Colour.__construct(wasm.gradients_colour_at(this.ptr, arg0));
-}
-}
-
-let slab = [];
-
-let slab_next = 0;
-
-function addHeapObject(obj) {
-    if (slab_next === slab.length)
-        slab.push(slab.length + 1);
-    const idx = slab_next;
-    const next = slab[idx];
-
-    slab_next = next;
-
-    slab[idx] = { obj, cnt: 1 };
-    return idx << 1;
-}
-
-let stack = [];
-
-function getObject(idx) {
-    if ((idx & 1) === 1) {
-        return stack[idx >> 1];
-    } else {
-        const val = slab[idx >> 1];
-
-    return val.obj;
-
-    }
-}
-
-__exports.__wbindgen_object_clone_ref = function(idx) {
-    // If this object is on the stack promote it to the heap.
-    if ((idx & 1) === 1)
-        return addHeapObject(getObject(idx));
-
-    // Otherwise if the object is on the heap just bump the
-    // refcount and move on
-    const val = slab[idx >> 1];
-    val.cnt += 1;
-    return idx;
-}
-
-function dropRef(idx) {
-
-    let obj = slab[idx >> 1];
-
-    obj.cnt -= 1;
-    if (obj.cnt > 0)
-        return;
-
-    // If we hit 0 then free up our space in the slab
-    slab[idx >> 1] = slab_next;
-    slab_next = idx >> 1;
-}
-
-__exports.__wbindgen_object_drop_ref = function(i) { dropRef(i); }
-
-__exports.__wbindgen_string_new = function(p, l) {
-    return addHeapObject(getStringFromWasm(p, l));
-}
-
-__exports.__wbindgen_number_new = function(i) { return addHeapObject(i); }
-
-__exports.__wbindgen_number_get = function(n, invalid) {
-    let obj = getObject(n);
-    if (typeof(obj) === 'number')
-        return obj;
-    getUint8Memory()[invalid] = 1;
-    return 0;
-}
-
-__exports.__wbindgen_undefined_new = function() { return addHeapObject(undefined); }
-
-__exports.__wbindgen_null_new = function() {
-    return addHeapObject(null);
-}
-
-__exports.__wbindgen_is_null = function(idx) {
-    return getObject(idx) === null ? 1 : 0;
-}
-
-__exports.__wbindgen_is_undefined = function(idx) {
-    return getObject(idx) === undefined ? 1 : 0;
-}
-
-__exports.__wbindgen_boolean_new = function(v) {
-    return addHeapObject(v === 1);
-}
-
-__exports.__wbindgen_boolean_get = function(i) {
-    let v = getObject(i);
-    if (typeof(v) === 'boolean') {
-        return v ? 1 : 0;
-    } else {
-        return 2;
-    }
-}
-
-__exports.__wbindgen_symbol_new = function(ptr, len) {
-    let a;
-    if (ptr === 0) {
-        a = Symbol();
-    } else {
-        a = Symbol(getStringFromWasm(ptr, len));
-    }
-    return addHeapObject(a);
-}
-
-__exports.__wbindgen_is_symbol = function(i) {
-    return typeof(getObject(i)) === 'symbol' ? 1 : 0;
-}
-
-__exports.__wbindgen_string_get = function(i, len_ptr) {
-    let obj = getObject(i);
-    if (typeof(obj) !== 'string')
-        return 0;
-    const [ptr, len] = passStringToWasm(obj);
-    getUint32Memory()[len_ptr / 4] = len;
-    return ptr;
 }
 
 __exports.__wbindgen_throw = function(ptr, len) {
     throw new Error(getStringFromWasm(ptr, len));
 }
 
-__exports.__wbindgen_log2 = function(x) { return Math.log2(x); }
-
 __exports.__wbindgen_round = function(x) { return Math.round(x); }
+
+__exports.__wbindgen_log2 = function(x) { return Math.log2(x); }
 
                     function init(wasm_path) {
                         return fetch(wasm_path)
