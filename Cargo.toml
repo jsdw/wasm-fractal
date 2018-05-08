@@ -4,8 +4,11 @@ version = "0.1.0"
 authors = ["James Wilson <me@unbui.lt>"]
 
 [profile.release]
+# remove debug symbols:
 debug = false
+# enable link time optimisations:
 lto = true
+# optimise for size (less aggressive than z):
 opt-level = 's'
 
 [lib]
