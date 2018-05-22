@@ -466,6 +466,9 @@ function FractalWorker(){
 
 // Run everything. If we fail to initialise workers, display
 // no support message.
-init().catch(_ => {
+init().then(_ => {
+	displayInstructions();
+	document.addEventListener("keydown", hideInstructions);
+}, _ => {
 	displayNoSupport("I'm sorry, but there was an issue fetching or instantiating the WASM based Web Workers. Do you have a plugin enabled that blocks WASM?");
 })

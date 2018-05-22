@@ -15,7 +15,7 @@
 			width: 100%;
 			height: 100%;
 		}
-		#no-support {
+		#no-support, #instructions {
 			display: flex;
 			justify-content: center;
 			align-items: center;
@@ -26,16 +26,31 @@
 			left: 0;
 			right: 0;
 		}
-		#no-support-inner {
+		#no-support-inner, #instructions-inner {
 			background-color: white;
 			max-width: 25em;
 			padding: 0.5em 1em;
 			font-family: monospace;
 			color: rgb(120, 116, 118);
 			line-height: 1.4em;
-			border-bottom: 7px solid #454545;
-			border-left: 3px solid grey;
-			border-right: 3px solid grey
+			border-bottom: 4px solid #454545;
+			border-left: 2px solid grey;
+			border-right: 2px solid grey
+		}
+		key\: {
+			display: inline-block;
+			line-height: 1.3em;
+			text-align: center;
+			background-color: #e0e0e0;
+			height: 1.3em;
+			width: 1.3em;
+			border-radius: 2px;
+			border-left: 1px solid #b3b3b3;
+			border-right: 1px solid #b3b3b3;
+			border-top: 1px solid #d4d4d4;
+			border-bottom: 1px solid #5a5a5a;
+			color: black;
+			margin: 2px 0px;
 		}
 	</style>
 </head>
@@ -47,11 +62,27 @@
 	<div id="no-support" style="display:none">
 		<div id="no-support-inner"></div>
 	</div>
+	<div id="instructions" style="display:none">
+		<div id="instructions-inner">
+			Pan using the <key:>W</key:>, <key:>A</key:>, <key:>S</key:> and <key:>D</key:> keys. Zoom using the <key:>+</key:> and <key:>-</key:> keys
+		</div>
+	</div>
 	<script type="text/javascript">
 
 		function displayNoSupport(text) {
 			document.getElementById("no-support-inner").textContent = text;
 			document.getElementById("no-support").style.display = "flex";
+		}
+
+		function displayInstructions() {
+			document.getElementById("instructions").style.display = "flex";
+		}
+
+		var instructionsAreHidden = false;
+		function hideInstructions() {
+			if(instructionsAreHidden) return;
+			document.getElementById("instructions").style.display = "none";
+			instructionsAreHidden = true;
 		}
 
 		const isWasmSupported = (() => {
