@@ -15,4 +15,6 @@ opt-level = 's'
 crate-type = ["cdylib"]
 
 [dependencies]
-wasm-bindgen = "0.2"
+# This should match the version of
+# wasm-bindgen-cli that you install:
+wasm-bindgen = "0.2.22"

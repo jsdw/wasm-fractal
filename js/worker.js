@@ -1,5 +1,10 @@
 importScripts("wasm_fractal.js");
 
+// not ordinarily necessary, but for streaming WASM compilation to
+// work it needs to be served with a content-type of application/wasm,
+// which isn't always the case (eg with php -S), so we remove for now:
+delete WebAssembly.instantiateStreaming;
+
 wasmFractal("./wasm_fractal_bg.wasm").then(() => {
 
     const {Renderer, Gradients, Opts, Colour, wasm} = wasmFractal;
