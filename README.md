@@ -15,17 +15,18 @@ We need nightly Rust (at present) for this to work. The following steps need run
 ```
 # install the nightly toolchain (I've tested this specific
 # version, but it shouldn't be hard to use a newer one):
-rustup install nightly-2018-09-23
+rustup install nightly-2018-09-24
 
-# use the nightly toolchain. can go back to
+# use this nightly toolchain. can go back to
 # stable with 'rustup default stable'
-rustup default nightly
+rustup default nightly-2018-09-24
 
 # add our wasm build target:
 rustup target add wasm32-unknown-unknown
 
 # install the bindgen cli tool to generate js<->wasm bindings
-# (matching the version of the wasm-bindgen library that we use):
+# (matching the version of the wasm-bindgen library that we use).
+# add --force to override an existing installed version.
 cargo install wasm-bindgen-cli --version 0.2.22
 ```
 

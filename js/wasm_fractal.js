@@ -27,121 +27,6 @@
         }
     }
 
-    function freeGradients(ptr) {
-
-        wasm.__wbg_gradients_free(ptr);
-    }
-    /**
-    */
-    class Gradients {
-
-        static __construct(ptr) {
-            return new Gradients(new ConstructorToken(ptr));
-        }
-
-        constructor(...args) {
-            if (args.length === 1 && args[0] instanceof ConstructorToken) {
-                this.ptr = args[0].ptr;
-                return;
-            }
-
-            // This invocation of new will call this constructor with a ConstructorToken
-            let instance = Gradients.new(...args);
-            this.ptr = instance.ptr;
-
-        }
-        free() {
-            const ptr = this.ptr;
-            this.ptr = 0;
-            freeGradients(ptr);
-        }
-        /**
-        * @returns {Gradients}
-        */
-        static new() {
-            return Gradients.__construct(wasm.gradients_new());
-        }
-        /**
-        * @returns {Gradients}
-        */
-        static bw() {
-            return Gradients.__construct(wasm.gradients_bw());
-        }
-        /**
-        * @returns {void}
-        */
-        clear() {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            return wasm.gradients_clear(this.ptr);
-        }
-        /**
-        * @param {number} arg0
-        * @param {number} arg1
-        * @param {number} arg2
-        * @param {number} arg3
-        * @returns {void}
-        */
-        add(arg0, arg1, arg2, arg3) {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            return wasm.gradients_add(this.ptr, arg0, arg1, arg2, arg3);
-        }
-        /**
-        * @param {number} arg0
-        * @returns {Colour}
-        */
-        colour_at(arg0) {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            return Colour.__construct(wasm.gradients_colour_at(this.ptr, arg0));
-        }
-    }
-    __exports.Gradients = Gradients;
-
-    function freeColour(ptr) {
-
-        wasm.__wbg_colour_free(ptr);
-    }
-    /**
-    */
-    class Colour {
-
-        static __construct(ptr) {
-            return new Colour(new ConstructorToken(ptr));
-        }
-
-        constructor(...args) {
-            if (args.length === 1 && args[0] instanceof ConstructorToken) {
-                this.ptr = args[0].ptr;
-                return;
-            }
-
-            // This invocation of new will call this constructor with a ConstructorToken
-            let instance = Colour.new(...args);
-            this.ptr = instance.ptr;
-
-        }
-        free() {
-            const ptr = this.ptr;
-            this.ptr = 0;
-            freeColour(ptr);
-        }
-        /**
-        * @param {number} arg0
-        * @param {number} arg1
-        * @param {number} arg2
-        * @returns {Colour}
-        */
-        static new(arg0, arg1, arg2) {
-            return Colour.__construct(wasm.colour_new(arg0, arg1, arg2));
-        }
-    }
-    __exports.Colour = Colour;
-
     function freeOpts(ptr) {
 
         wasm.__wbg_opts_free(ptr);
@@ -354,6 +239,121 @@
         }
     }
     __exports.Renderer = Renderer;
+
+    function freeGradients(ptr) {
+
+        wasm.__wbg_gradients_free(ptr);
+    }
+    /**
+    */
+    class Gradients {
+
+        static __construct(ptr) {
+            return new Gradients(new ConstructorToken(ptr));
+        }
+
+        constructor(...args) {
+            if (args.length === 1 && args[0] instanceof ConstructorToken) {
+                this.ptr = args[0].ptr;
+                return;
+            }
+
+            // This invocation of new will call this constructor with a ConstructorToken
+            let instance = Gradients.new(...args);
+            this.ptr = instance.ptr;
+
+        }
+        free() {
+            const ptr = this.ptr;
+            this.ptr = 0;
+            freeGradients(ptr);
+        }
+        /**
+        * @returns {Gradients}
+        */
+        static new() {
+            return Gradients.__construct(wasm.gradients_new());
+        }
+        /**
+        * @returns {Gradients}
+        */
+        static bw() {
+            return Gradients.__construct(wasm.gradients_bw());
+        }
+        /**
+        * @returns {void}
+        */
+        clear() {
+            if (this.ptr === 0) {
+                throw new Error('Attempt to use a moved value');
+            }
+            return wasm.gradients_clear(this.ptr);
+        }
+        /**
+        * @param {number} arg0
+        * @param {number} arg1
+        * @param {number} arg2
+        * @param {number} arg3
+        * @returns {void}
+        */
+        add(arg0, arg1, arg2, arg3) {
+            if (this.ptr === 0) {
+                throw new Error('Attempt to use a moved value');
+            }
+            return wasm.gradients_add(this.ptr, arg0, arg1, arg2, arg3);
+        }
+        /**
+        * @param {number} arg0
+        * @returns {Colour}
+        */
+        colour_at(arg0) {
+            if (this.ptr === 0) {
+                throw new Error('Attempt to use a moved value');
+            }
+            return Colour.__construct(wasm.gradients_colour_at(this.ptr, arg0));
+        }
+    }
+    __exports.Gradients = Gradients;
+
+    function freeColour(ptr) {
+
+        wasm.__wbg_colour_free(ptr);
+    }
+    /**
+    */
+    class Colour {
+
+        static __construct(ptr) {
+            return new Colour(new ConstructorToken(ptr));
+        }
+
+        constructor(...args) {
+            if (args.length === 1 && args[0] instanceof ConstructorToken) {
+                this.ptr = args[0].ptr;
+                return;
+            }
+
+            // This invocation of new will call this constructor with a ConstructorToken
+            let instance = Colour.new(...args);
+            this.ptr = instance.ptr;
+
+        }
+        free() {
+            const ptr = this.ptr;
+            this.ptr = 0;
+            freeColour(ptr);
+        }
+        /**
+        * @param {number} arg0
+        * @param {number} arg1
+        * @param {number} arg2
+        * @returns {Colour}
+        */
+        static new(arg0, arg1, arg2) {
+            return Colour.__construct(wasm.colour_new(arg0, arg1, arg2));
+        }
+    }
+    __exports.Colour = Colour;
 
     let cachedDecoder = new TextDecoder('utf-8');
 
