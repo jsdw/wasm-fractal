@@ -138,6 +138,12 @@ async function init() {
 	doRender();
 }
 
+function clearCanvases() {
+	[canvasMedium, canvasLarge, canvasRetina].forEach((c, i) => {
+		c.ctx.clearRect(0, 0, c.el.width, c.el.height);
+	})
+}
+
 // Given an array of fractal workers, this function renders
 // the fractal based on the current cx, cy and radius,
 async function render(fractalQueue) {
@@ -173,6 +179,8 @@ async function render(fractalQueue) {
 
 	const pixelsPerWorker = 100000;
 
+	let isCleared = false;
+
 	// for each canvas size, split the work into batches:
 	[canvasSmall, canvasMedium, canvasLarge, canvasRetina].forEach((c, i) => {
 
@@ -183,7 +191,6 @@ async function render(fractalQueue) {
 
 		const canvasWidth = c.el.width;
 		const canvasHeight = c.el.height;
-		c.ctx.clearRect(0, 0, canvasWidth, canvasHeight);
 
 		const jobs = (canvasWidth * canvasHeight) / pixelsPerWorker;
 
@@ -207,6 +214,10 @@ async function render(fractalQueue) {
 					width: canvasWidth,
 					height: rowsPerJob
 				}).then(imageData => {
+					if (!isCleared) {
+						clearCanvases();
+						isCleared = true;
+					}
 					c.ctx.putImageData(imageData, 0, thisTopPx);
 				})
 			);
