@@ -1,7 +1,7 @@
 [package]
 name = "wasm-fractal"
 version = "0.1.0"
-authors = ["James Wilson <me@unbui.lt>"]
+authors = ["James Wilson <james@jsdw.me>"]
 
 [profile.release]
 # remove debug symbols:
@@ -17,4 +17,4 @@ crate-type = ["cdylib"]
 [dependencies]
 # This should match the version of
 # wasm-bindgen-cli that you install:
-wasm-bindgen = "0.2.22"
+wasm-bindgen = "=0.2.42"

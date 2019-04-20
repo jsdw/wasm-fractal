@@ -10,4 +10,8 @@ cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cargo build --release --target wasm32-unknown-unknown
 
 # update the wasm bindings:
-wasm-bindgen target/wasm32-unknown-unknown/release/wasm_fractal.wasm --no-modules --no-modules-global wasmFractal --no-typescript --out-dir js
+wasm-bindgen target/wasm32-unknown-unknown/release/wasm_fractal.wasm \
+    --no-modules \
+    --no-modules-global wasmFractal \
+    --no-typescript \
+    --out-dir js

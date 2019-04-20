@@ -5,10 +5,9 @@ importScripts("wasm_fractal.js");
 // which isn't always the case (eg with php -S), so we remove for now:
 delete WebAssembly.instantiateStreaming;
 
-wasmFractal("./wasm_fractal_bg.wasm").then(() => {
+wasmFractal("./wasm_fractal_bg.wasm").then((wasm) => {
 
-    const {Renderer, Gradients, Opts, Colour, wasm} = wasmFractal;
-
+    const {Renderer, Gradients, Opts} = wasmFractal;
     const renderer = new Renderer();
 
     // after init, an interface is provided which allows the worker

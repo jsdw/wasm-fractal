@@ -1,9 +1,10 @@
 (function() {
-    var wasm;
     const __exports = {};
+    let wasm;
 
+    let WASM_VECTOR_LEN = 0;
 
-    let cachedEncoder = new TextEncoder('utf-8');
+    let cachedTextEncoder = new TextEncoder('utf-8');
 
     let cachegetUint8Memory = null;
     function getUint8Memory() {
@@ -13,19 +14,138 @@
         return cachegetUint8Memory;
     }
 
-    function passStringToWasm(arg) {
+    let passStringToWasm;
+    if (typeof cachedTextEncoder.encodeInto === 'function') {
+        passStringToWasm = function(arg) {
 
-        const buf = cachedEncoder.encode(arg);
-        const ptr = wasm.__wbindgen_malloc(buf.length);
-        getUint8Memory().set(buf, ptr);
-        return [ptr, buf.length];
+            let size = arg.length;
+            let ptr = wasm.__wbindgen_malloc(size);
+            let writeOffset = 0;
+            while (true) {
+                const view = getUint8Memory().subarray(ptr + writeOffset, ptr + size);
+                const { read, written } = cachedTextEncoder.encodeInto(arg, view);
+                writeOffset += written;
+                if (read === arg.length) {
+                    break;
+                }
+                arg = arg.substring(read);
+                ptr = wasm.__wbindgen_realloc(ptr, size, size += arg.length * 3);
+            }
+            WASM_VECTOR_LEN = writeOffset;
+            return ptr;
+        };
+    } else {
+        passStringToWasm = function(arg) {
+
+            const buf = cachedTextEncoder.encode(arg);
+            const ptr = wasm.__wbindgen_malloc(buf.length);
+            getUint8Memory().set(buf, ptr);
+            WASM_VECTOR_LEN = buf.length;
+            return ptr;
+        };
     }
 
-    class ConstructorToken {
-        constructor(ptr) {
-            this.ptr = ptr;
+    let cachedTextDecoder = new TextDecoder('utf-8');
+
+    function getStringFromWasm(ptr, len) {
+        return cachedTextDecoder.decode(getUint8Memory().subarray(ptr, ptr + len));
+    }
+
+    __exports.__wbindgen_throw = function(ptr, len) {
+        throw new Error(getStringFromWasm(ptr, len));
+    };
+
+    function freeColour(ptr) {
+
+        wasm.__wbg_colour_free(ptr);
+    }
+    /**
+    */
+    class Colour {
+
+        static __wrap(ptr) {
+            const obj = Object.create(Colour.prototype);
+            obj.ptr = ptr;
+
+            return obj;
+        }
+
+        free() {
+            const ptr = this.ptr;
+            this.ptr = 0;
+            freeColour(ptr);
+        }
+
+        /**
+        * @param {number} red
+        * @param {number} green
+        * @param {number} blue
+        * @returns {}
+        */
+        constructor(red, green, blue) {
+            this.ptr = wasm.colour_new(red, green, blue);
         }
     }
+    __exports.Colour = Colour;
+
+    function freeGradients(ptr) {
+
+        wasm.__wbg_gradients_free(ptr);
+    }
+    /**
+    */
+    class Gradients {
+
+        static __wrap(ptr) {
+            const obj = Object.create(Gradients.prototype);
+            obj.ptr = ptr;
+
+            return obj;
+        }
+
+        free() {
+            const ptr = this.ptr;
+            this.ptr = 0;
+            freeGradients(ptr);
+        }
+
+        /**
+        * @returns {}
+        */
+        constructor() {
+            this.ptr = wasm.gradients_new();
+        }
+        /**
+        * @returns {Gradients}
+        */
+        static bw() {
+            return Gradients.__wrap(wasm.gradients_bw());
+        }
+        /**
+        * @returns {void}
+        */
+        clear() {
+            return wasm.gradients_clear(this.ptr);
+        }
+        /**
+        * @param {number} at
+        * @param {number} red
+        * @param {number} green
+        * @param {number} blue
+        * @returns {void}
+        */
+        add(at, red, green, blue) {
+            return wasm.gradients_add(this.ptr, at, red, green, blue);
+        }
+        /**
+        * @param {number} at
+        * @returns {Colour}
+        */
+        colour_at(at) {
+            return Colour.__wrap(wasm.gradients_colour_at(this.ptr, at));
+        }
+    }
+    __exports.Gradients = Gradients;
 
     function freeOpts(ptr) {
 
@@ -35,91 +155,59 @@
     */
     class Opts {
 
-        static __construct(ptr) {
-            return new Opts(new ConstructorToken(ptr));
-        }
-
-        constructor(...args) {
-            if (args.length === 1 && args[0] instanceof ConstructorToken) {
-                this.ptr = args[0].ptr;
-                return;
-            }
-
-            // This invocation of new will call this constructor with a ConstructorToken
-            let instance = Opts.new(...args);
-            this.ptr = instance.ptr;
-
-        }
         free() {
             const ptr = this.ptr;
             this.ptr = 0;
             freeOpts(ptr);
         }
+
         /**
-        * @returns {Opts}
+        * @returns {}
         */
-        static new() {
-            return Opts.__construct(wasm.opts_new());
+        constructor() {
+            this.ptr = wasm.opts_new();
         }
         /**
-        * @param {number} arg0
+        * @param {number} val
         * @returns {void}
         */
-        set_width(arg0) {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            return wasm.opts_set_width(this.ptr, arg0);
+        set_width(val) {
+            return wasm.opts_set_width(this.ptr, val);
         }
         /**
-        * @param {number} arg0
+        * @param {number} val
         * @returns {void}
         */
-        set_height(arg0) {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            return wasm.opts_set_height(this.ptr, arg0);
+        set_height(val) {
+            return wasm.opts_set_height(this.ptr, val);
         }
         /**
-        * @param {number} arg0
+        * @param {number} val
         * @returns {void}
         */
-        set_top(arg0) {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            return wasm.opts_set_top(this.ptr, arg0);
+        set_top(val) {
+            return wasm.opts_set_top(this.ptr, val);
         }
         /**
-        * @param {number} arg0
+        * @param {number} val
         * @returns {void}
         */
-        set_left(arg0) {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            return wasm.opts_set_left(this.ptr, arg0);
+        set_left(val) {
+            return wasm.opts_set_left(this.ptr, val);
         }
         /**
-        * @param {number} arg0
+        * @param {number} val
         * @returns {void}
         */
-        set_bottom(arg0) {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            return wasm.opts_set_bottom(this.ptr, arg0);
+        set_bottom(val) {
+            return wasm.opts_set_bottom(this.ptr, val);
         }
         /**
-        * @param {number} arg0
+        * @param {number} val
         * @returns {void}
         */
-        set_right(arg0) {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            return wasm.opts_set_right(this.ptr, arg0);
+        set_right(val) {
+            return wasm.opts_set_right(this.ptr, val);
         }
     }
     __exports.Opts = Opts;
@@ -132,253 +220,128 @@
     */
     class Renderer {
 
-        static __construct(ptr) {
-            return new Renderer(new ConstructorToken(ptr));
-        }
-
-        constructor(...args) {
-            if (args.length === 1 && args[0] instanceof ConstructorToken) {
-                this.ptr = args[0].ptr;
-                return;
-            }
-
-            // This invocation of new will call this constructor with a ConstructorToken
-            let instance = Renderer.new(...args);
-            this.ptr = instance.ptr;
-
-        }
         free() {
             const ptr = this.ptr;
             this.ptr = 0;
             freeRenderer(ptr);
         }
+
         /**
-        * @returns {Renderer}
+        * @returns {}
         */
-        static new() {
-            return Renderer.__construct(wasm.renderer_new());
+        constructor() {
+            this.ptr = wasm.renderer_new();
         }
         /**
-        * @param {string} arg0
+        * @param {string} name
         * @returns {void}
         */
-        set_name(arg0) {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            const [ptr0, len0] = passStringToWasm(arg0);
+        set_name(name) {
+            const ptr0 = passStringToWasm(name);
+            const len0 = WASM_VECTOR_LEN;
             return wasm.renderer_set_name(this.ptr, ptr0, len0);
         }
         /**
-        * @param {Gradients} arg0
+        * @param {Gradients} gradients
         * @returns {void}
         */
-        set_gradients(arg0) {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            const ptr0 = arg0.ptr;
-            if (ptr0 === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            arg0.ptr = 0;
+        set_gradients(gradients) {
+            const ptr0 = gradients.ptr;
+            gradients.ptr = 0;
             return wasm.renderer_set_gradients(this.ptr, ptr0);
         }
         /**
-        * @param {number} arg0
+        * @param {number} mi
         * @returns {void}
         */
-        set_max_iterations(arg0) {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            return wasm.renderer_set_max_iterations(this.ptr, arg0);
+        set_max_iterations(mi) {
+            return wasm.renderer_set_max_iterations(this.ptr, mi);
         }
         /**
-        * @param {number} arg0
+        * @param {number} er
         * @returns {void}
         */
-        set_escape_radius(arg0) {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            return wasm.renderer_set_escape_radius(this.ptr, arg0);
+        set_escape_radius(er) {
+            return wasm.renderer_set_escape_radius(this.ptr, er);
         }
         /**
-        * @param {Opts} arg0
+        * @param {Opts} opts
         * @returns {void}
         */
-        render(arg0) {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            const ptr0 = arg0.ptr;
-            if (ptr0 === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            arg0.ptr = 0;
+        render(opts) {
+            const ptr0 = opts.ptr;
+            opts.ptr = 0;
             return wasm.renderer_render(this.ptr, ptr0);
         }
         /**
         * @returns {number}
         */
         output_len() {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            return wasm.renderer_output_len(this.ptr);
+            return wasm.renderer_output_len(this.ptr) >>> 0;
         }
         /**
         * @returns {number}
         */
         output_ptr() {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
             return wasm.renderer_output_ptr(this.ptr);
         }
     }
     __exports.Renderer = Renderer;
 
-    function freeGradients(ptr) {
+    const heap = new Array(32);
 
-        wasm.__wbg_gradients_free(ptr);
-    }
-    /**
-    */
-    class Gradients {
+    heap.fill(undefined);
 
-        static __construct(ptr) {
-            return new Gradients(new ConstructorToken(ptr));
-        }
+    heap.push(undefined, null, true, false);
 
-        constructor(...args) {
-            if (args.length === 1 && args[0] instanceof ConstructorToken) {
-                this.ptr = args[0].ptr;
-                return;
-            }
+    let heap_next = heap.length;
 
-            // This invocation of new will call this constructor with a ConstructorToken
-            let instance = Gradients.new(...args);
-            this.ptr = instance.ptr;
-
-        }
-        free() {
-            const ptr = this.ptr;
-            this.ptr = 0;
-            freeGradients(ptr);
-        }
-        /**
-        * @returns {Gradients}
-        */
-        static new() {
-            return Gradients.__construct(wasm.gradients_new());
-        }
-        /**
-        * @returns {Gradients}
-        */
-        static bw() {
-            return Gradients.__construct(wasm.gradients_bw());
-        }
-        /**
-        * @returns {void}
-        */
-        clear() {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            return wasm.gradients_clear(this.ptr);
-        }
-        /**
-        * @param {number} arg0
-        * @param {number} arg1
-        * @param {number} arg2
-        * @param {number} arg3
-        * @returns {void}
-        */
-        add(arg0, arg1, arg2, arg3) {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            return wasm.gradients_add(this.ptr, arg0, arg1, arg2, arg3);
-        }
-        /**
-        * @param {number} arg0
-        * @returns {Colour}
-        */
-        colour_at(arg0) {
-            if (this.ptr === 0) {
-                throw new Error('Attempt to use a moved value');
-            }
-            return Colour.__construct(wasm.gradients_colour_at(this.ptr, arg0));
-        }
-    }
-    __exports.Gradients = Gradients;
-
-    function freeColour(ptr) {
-
-        wasm.__wbg_colour_free(ptr);
-    }
-    /**
-    */
-    class Colour {
-
-        static __construct(ptr) {
-            return new Colour(new ConstructorToken(ptr));
-        }
-
-        constructor(...args) {
-            if (args.length === 1 && args[0] instanceof ConstructorToken) {
-                this.ptr = args[0].ptr;
-                return;
-            }
-
-            // This invocation of new will call this constructor with a ConstructorToken
-            let instance = Colour.new(...args);
-            this.ptr = instance.ptr;
-
-        }
-        free() {
-            const ptr = this.ptr;
-            this.ptr = 0;
-            freeColour(ptr);
-        }
-        /**
-        * @param {number} arg0
-        * @param {number} arg1
-        * @param {number} arg2
-        * @returns {Colour}
-        */
-        static new(arg0, arg1, arg2) {
-            return Colour.__construct(wasm.colour_new(arg0, arg1, arg2));
-        }
-    }
-    __exports.Colour = Colour;
-
-    let cachedDecoder = new TextDecoder('utf-8');
-
-    function getStringFromWasm(ptr, len) {
-        return cachedDecoder.decode(getUint8Memory().subarray(ptr, ptr + len));
+    function dropObject(idx) {
+        if (idx < 36) return;
+        heap[idx] = heap_next;
+        heap_next = idx;
     }
 
-    __exports.__wbindgen_throw = function(ptr, len) {
-        throw new Error(getStringFromWasm(ptr, len));
-    };
+    __exports.__wbindgen_object_drop_ref = function(i) { dropObject(i); };
 
-    function init(wasm_path) {
-        const fetchPromise = fetch(wasm_path);
-        let resultPromise;
-        if (typeof WebAssembly.instantiateStreaming === 'function') {
-            resultPromise = WebAssembly.instantiateStreaming(fetchPromise, { './wasm_fractal': __exports });
+    function init(module) {
+        let result;
+        const imports = { './wasm_fractal': __exports };
+        if (module instanceof URL || typeof module === 'string' || module instanceof Request) {
+
+            const response = fetch(module);
+            if (typeof WebAssembly.instantiateStreaming === 'function') {
+                result = WebAssembly.instantiateStreaming(response, imports)
+                .catch(e => {
+                    console.warn("`WebAssembly.instantiateStreaming` failed. Assuming this is because your server does not serve wasm with `application/wasm` MIME type. Falling back to `WebAssembly.instantiate` which is slower. Original error:\n", e);
+                    return response
+                    .then(r => r.arrayBuffer())
+                    .then(bytes => WebAssembly.instantiate(bytes, imports));
+                });
+            } else {
+                result = response
+                .then(r => r.arrayBuffer())
+                .then(bytes => WebAssembly.instantiate(bytes, imports));
+            }
         } else {
-            resultPromise = fetchPromise
-            .then(response => response.arrayBuffer())
-            .then(buffer => WebAssembly.instantiate(buffer, { './wasm_fractal': __exports }));
+
+            result = WebAssembly.instantiate(module, imports)
+            .then(result => {
+                if (result instanceof WebAssembly.Instance) {
+                    return { instance: result, module };
+                } else {
+                    return result;
+                }
+            });
         }
-        return resultPromise.then(({instance}) => {
-            wasm = init.wasm = instance.exports;
-            return;
+        return result.then(({instance, module}) => {
+            wasm = instance.exports;
+            init.__wbindgen_wasm_module = module;
+
+            return wasm;
         });
-    };
+    }
+
     self.wasmFractal = Object.assign(init, __exports);
+
 })();
