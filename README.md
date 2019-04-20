@@ -40,4 +40,8 @@ Alternately, just run `./make_wasm.sh`, which does the same.
 If you run into any issues:
 
 - make sure that running `wasm-bindgen --version` returns `0.2.42`.
-- `rm -rf target` and try building again
+- `rm -rf target` and try building again.
+
+# Contributions
+
+This is primarily a demo of Rust + WebAssembly, so I'm not looking to add or support lots of new features, but I'll happily accept fixes to bring it into line with the most recent stable Rust/wasm-bindgen versions. If you have something else in mind, please get in touch!
